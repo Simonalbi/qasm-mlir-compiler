@@ -1,0 +1,27 @@
+# Python virtual environment
+quantum_env/
+venv/
+__pycache__/
+*.pyc
+
+# LLVM source directory
+llvm-project/
+
+# Build directories
+build/
+out/
+bin/
+
+# CMake and clangd generated files
+compile_commands.json
+.cache/
+
+# VS Code local configuration
+.vscode/
+
+# Object files and executables
+*.o
+*.a
+*.so
+*.exe
+*.out
