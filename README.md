@@ -22,15 +22,9 @@ git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
 ```
 
-#### Create the build directory
-```bash
-mkdir build
-cd build
-```
-
 #### Configure the build with CMake (Release mode, X86 target, enable MLIR)
 ```bash
-cmake -G Ninja ../llvm \
+cmake -B build -G Ninja ../llvm \
    -DLLVM_ENABLE_PROJECTS=mlir \
    -DLLVM_BUILD_EXAMPLES=ON \
    -DLLVM_TARGETS_TO_BUILD="X86" \
@@ -55,12 +49,55 @@ source quantum_env/bin/activate
 pip install -r requirements.txt
 ```
 
+### 3. Compiling the Local Project (Quantum Compiler)
+Once the LLVM framework is built, you can compile the actual frontend of the quantum compiler. The build system is managed via CMake and Ninja. Generates the build directory and the Ninja configuration files.
+```bash
+cmake -B build -G Ninja
+```
+
+## OpenQASM 2.0 Subset Grammar (EBNF)
+
+```ebnf
+Program      ::= VersionDecl? Statement* EOF
+VersionDecl  ::= "OPENQASM" "2.0" ";"
+
+Statement    ::= IncludeDecl | QRegDecl | CRegDecl | GateCall | Measure
+IncludeDecl  ::= "include" StringLiteral ";"
+
+QRegDecl     ::= "qreg" Identifier "[" Integer "]" ";"
+CRegDecl     ::= "creg" Identifier "[" Integer "]" ";"
+
+Measure      ::= "measure" Argument "->" Argument ";"
+
+GateCall     ::= GateName ( "(" Expression ")" )? ArgumentList ";"
+GateName     ::= "h" | "x" | "y" | "z" | "s" | "t" | "rx" | "ry" | "rz" | "cx"
+
+ArgumentList ::= Argument ( "," Argument )*
+Argument     ::= Identifier "[" Integer "]"
+
+Expression   ::= Float | "pi" | Float "*" "pi" | "-" Expression | Float "/" Float
+```
+
 ## 💻 Usage
 *This section will be updated as the compiler development progresses*
 
+### 🔍 Frontend (Parser & AST)
+Use the `qparse` tool to perform lexical and syntactic analysis of OpenQASM 2.0 source files.
+
+**Validate syntax:** Checks if the provided file is a valid OpenQASM subset. It will halt and report precise line/column diagnostics on lexical or syntax errors.
 ```bash
-# Example usage (planned)
-./bin/qcc input.qasm --optimize -emit=qasm -o output.qasm
+qparse input.qasm
+```
+
+**Dump the Abstract Syntax Tree:** Parses the input file and prints the hierarchical, typed AST representation.
+```bash
+qparse input.qasm --dump-ast
+```
+
+### ⚙️ Optimization (Planned usage)
+Use the `qcc` tool to optimize a `qasm` file.
+```bash
+qcc input.qasm --optimize -emit=qasm -o output.qasm
 ```
 
 ## 📋 Project Roadmap
