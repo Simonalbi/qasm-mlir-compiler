@@ -89,9 +89,34 @@ Use the `qparse` tool to perform lexical and syntactic analysis of OpenQASM 2.0 
 qparse input.qasm
 ```
 
+```bash
+===== Lexical Analysis of tests/Frontend/inputs/valid/valid_5.qasm =====
+Line 1     Col 1    | Keyword: OPENQASM
+Line 1     Col 10   | Float: 2
+Line 1     Col 13   | Symbol: ';'
+Line 2     Col 1    | Keyword: include
+Line 2     Col 9    | String: "qelib1.inc"
+Line 2     Col 21   | Symbol: ';'
+Line 5     Col 1    | Keyword: qreg
+Line 5     Col 6    | Identifier: q
+Line 5     Col 7    | Symbol: '['
+Line 5     Col 8    | Integer: 3
+Line 5     Col 9    | Symbol: ']'
+Line 5     Col 10   | Symbol: ';'
+...
+```
+
 **Dump the Abstract Syntax Tree:** Parses the input file and prints the hierarchical, typed AST representation.
 ```bash
 qparse input.qasm --dump-ast
+```
+
+```bash
+ProgramAST
+  OpenQASMVersion: 2
+  Include: "qelib1.inc"
+  QRegDecl 'q' [3]
+  ...
 ```
 
 ### ⚙️ Optimization (Planned usage)
