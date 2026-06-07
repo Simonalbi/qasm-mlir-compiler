@@ -1,4 +1,5 @@
 #include "Frontend/Lexer.h"
+
 #include <cctype>
 #include <cstdlib>
 #include <cstring>

@@ -1,11 +1,16 @@
+#include "Frontend/Lexer.h"
+#include "Frontend/Parser.h"
+
 #include <iostream>
 #include <fstream>
-#include "Frontend/Lexer.h"
+#include <string>
+#include <iomanip>
 
 using namespace quantum;
 
 void printToken(int tok, const Lexer& lexer) {
-    std::cout << "Line " << lexer.getLine() << ", Col " << lexer.getCol() << " \t| ";
+    std::cout << "Line " << std::left << std::setw(5) << lexer.getLine() 
+              << " Col " << std::left << std::setw(4) << lexer.getCol() << " | ";
     
     switch(tok) {
         case tok_eof:        std::cout << "EOF\n"; break;
@@ -24,28 +29,66 @@ void printToken(int tok, const Lexer& lexer) {
 }
 
 int main(int argc, char* argv[]) {
+    // Args check
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_file.qasm>\n";
+        std::cerr << "Usage: " << argv[0] << " <path_to_file.qasm> [--dump-ast]\n";
         return 1;
     }
 
-    std::ifstream inputFile(argv[1]);
+    std::string filename = "";
+    bool dumpAST = false;
+
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--dump-ast") {
+            dumpAST = true;
+        } else if (arg[0] != '-') {
+            filename = arg;
+        } else {
+            std::cerr << "Unknown option: " << arg << "\n";
+            return 1;
+        }
+    }
+
+    // Checks for file path arg
+    if (filename.empty()) {
+        std::cerr << "Error: No input file specified.\n";
+        return 1;
+    }
+
+    // File opening
+    std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
-        std::cerr << "Error: unable to open file " << argv[1] << "\n";
+        std::cerr << "Error: unable to open file " << filename << "\n";
         return 1;
     }
 
+    // Lexer initialization
     Lexer lexer(inputFile);
 
-    std::cout << "--- Starting Lexical Analysis of " << argv[1] << " ---\n";
-
-    int tok;
-    do {
-        tok = lexer.getToken();
-        if (tok != tok_error) {
-            printToken(tok, lexer);
+    if (dumpAST) { // AST dumping
+        std::cout << "===== Parsing and AST Dump of " << filename << " =====\n";
+        
+        Parser parser(lexer);
+        auto ast = parser.parseProgram();
+        
+        if (ast && !parser.hasError()) {
+            ast -> dump();
+        } else {
+            std::cerr << "\nParsing failed due to syntax errors.\n";
+            return 1;
         }
-    } while (tok != tok_eof && tok != tok_error);
+    } else { // Tokens printing
+        std::cout << "===== Lexical Analysis of " << filename << " =====\n";
+
+        int tok;
+        do {
+            tok = lexer.getToken();
+            if (tok != tok_error) {
+                printToken(tok, lexer);
+            }
+        } while (tok != tok_eof && tok != tok_error);
+    }
 
     return 0;
 }
