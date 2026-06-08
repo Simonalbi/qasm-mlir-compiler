@@ -75,7 +75,9 @@ GateName     ::= "h" | "x" | "y" | "z" | "s" | "t" | "rx" | "ry" | "rz" | "cx"
 ArgumentList ::= Argument ( "," Argument )*
 Argument     ::= Identifier "[" Integer "]"
 
-Expression   ::= Float | "pi" | Float "*" "pi" | "-" Expression | Float "/" Float
+Expression   ::= "-"? PrimaryExpr ( BinaryOp PrimaryExpr )?
+PrimaryExpr  ::= Float | Integer | "pi"
+BinaryOp     ::= "+" | "-" | "*" | "/"
 ```
 
 ## 💻 Usage
