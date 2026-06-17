@@ -1,6 +1,8 @@
 #include "Frontend/Lexer.h"
 
+#include <cerrno>
 #include <cctype>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
 
@@ -60,7 +62,18 @@ namespace quantum {
             FloatVal = strtod(NumStr.c_str(), nullptr);
             return tok_float;
         } else {
-            NumVal = strtol(NumStr.c_str(), nullptr, 10);
+            // Parse into a wider type first, then reject malformed or out-of-range integers
+            errno = 0;
+            char *endPtr = nullptr;
+            long long parsed = std::strtoll(NumStr.c_str(), &endPtr, 10);
+
+            if (errno == ERANGE || endPtr == NumStr.c_str() || *endPtr != '\0' ||
+                parsed < INT_MIN || parsed > INT_MAX) {
+                printLexicalError("Integer literal out of range.");
+                return tok_error;
+            }
+
+            NumVal = static_cast<int>(parsed);
             return tok_integer;
         }
     }

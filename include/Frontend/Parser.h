@@ -5,6 +5,7 @@
 #include "AST.h"
 
 #include <memory>
+#include <unordered_map>
 
 namespace quantum {
 
@@ -14,23 +15,40 @@ namespace quantum {
      * Supported Grammar (EBNF):
      * Program      ::= VersionDecl? Statement* EOF
      * VersionDecl  ::= "OPENQASM" "2.0" ";"
+     * 
      * Statement    ::= IncludeDecl | QRegDecl | CRegDecl | GateCall | Measure
      * IncludeDecl  ::= "include" StringLiteral ";"
+     * 
      * QRegDecl     ::= "qreg" Identifier "[" Integer "]" ";"
      * CRegDecl     ::= "creg" Identifier "[" Integer "]" ";"
+     * 
      * Measure      ::= "measure" Argument "->" Argument ";"
+     * 
      * GateCall     ::= GateName ( "(" Expression ")" )? ArgumentList ";"
      * GateName     ::= "h" | "x" | "y" | "z" | "s" | "t" | "rx" | "ry" | "rz" | "cx"
+     * 
      * ArgumentList ::= Argument ( "," Argument )*
      * Argument     ::= Identifier "[" Integer "]"
+     * 
      * Expression   ::= "-"? PrimaryExpr ( BinaryOp PrimaryExpr )?
      * PrimaryExpr  ::= Float | Integer | "pi"
      * BinaryOp     ::= "+" | "-" | "*" | "/"
      */
     class Parser {
+        struct RegisterInfo {
+            bool IsQuantum;
+            int Size;
+        };
+
+        enum class TargetKind {
+            Quantum,
+            Classical,
+        };
+
         Lexer &lex;
         int CurTok;
         bool HasError = false;
+        std::unordered_map<std::string, RegisterInfo> Registers;
 
         /**
          * @brief Advances to the next token from the lexer.
@@ -40,8 +58,8 @@ namespace quantum {
         }
 
         // Error Handling Helpers
-        std::unique_ptr<ExpressionAST> LogErrorExpr(const char *Str);
-        std::unique_ptr<StatementAST> LogErrorStmt(const char *Str);
+        std::unique_ptr<ExpressionAST> LogErrorExpr(const std::string &Str);
+        std::unique_ptr<StatementAST> LogErrorStmt(const std::string &Str);
 
         /**
          * @brief Parses a primary expression (a single number or 'pi').
@@ -54,11 +72,24 @@ namespace quantum {
         std::unique_ptr<ExpressionAST> parseExpression();
 
         /**
-         * @brief Parses a target register entry like `q[0]`.
+         * @brief Parses and validates a target register entry like `q[0]`.
          *
-         * @return A pair containing the register name and index.
+         * Performs syntactic parsing (register name and index) followed by semantic checks:
+         * - Verifies the register has been declared before use.
+         * - Ensures the register kind (quantum or classical) matches the expected kind.
+         * - Checks that the index is within the valid range [0, register size).
+         *
+         * @param Target Output parameter: filled with the register name and index on success.
+         * @param ExpectedKind The expected register kind (Quantum for gate/measurement source, Classical for measurement destination).
+         * @param Context A string describing the parsing context, used only for error messages (e.g., "gate 'h'" or "measurement source").
+         *
+         * @return true if parsing and all semantic checks succeed; false otherwise (error is logged via LogErrorStmt).
          */
-        std::pair<std::string, int> parseTarget();
+        bool parseTarget(std::pair<std::string, int> &Target, TargetKind ExpectedKind, const std::string &Context);
+
+        bool isSupportedGate(const std::string &GateName) const;
+        bool gateExpectsParameter(const std::string &GateName) const;
+        size_t gateTargetCount(const std::string &GateName) const;
 
         /**
          * @brief Parses `OPENQASM 2.0;`

@@ -25,3 +25,4 @@ Argument     ::= Identifier "[" Integer "]"
 Expression   ::= "-"? PrimaryExpr ( BinaryOp PrimaryExpr )?
 PrimaryExpr  ::= Float | Integer | "pi"
 BinaryOp     ::= "+" | "-" | "*" | "/"
+```

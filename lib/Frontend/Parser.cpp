@@ -1,16 +1,18 @@
 #include "Frontend/Parser.h"
 
+#include <utility>
+
 namespace quantum {
 
-    std::unique_ptr<ExpressionAST> Parser::LogErrorExpr(const char *Str) {
+    std::unique_ptr<ExpressionAST> Parser::LogErrorExpr(const std::string &Str) {
         HasError = true;
-        fprintf(stderr, "Syntax Error at Line %d, Col %d: %s\n", lex.getLine(), lex.getCol(), Str);
+        fprintf(stderr, "Syntax Error at Line %d, Col %d: %s\n", lex.getLine(), lex.getCol(), Str.c_str());
         return nullptr;
     }
 
-    std::unique_ptr<StatementAST> Parser::LogErrorStmt(const char *Str) {
+    std::unique_ptr<StatementAST> Parser::LogErrorStmt(const std::string &Str) {
         HasError = true;
-        fprintf(stderr, "Syntax Error at Line %d, Col %d: %s\n", lex.getLine(), lex.getCol(), Str);
+        fprintf(stderr, "Syntax Error at Line %d, Col %d: %s\n", lex.getLine(), lex.getCol(), Str.c_str());
         return nullptr;
     }
 
@@ -65,10 +67,10 @@ namespace quantum {
         return LHS;
     }
 
-    std::pair<std::string, int> Parser::parseTarget() {
+    bool Parser::parseTarget(std::pair<std::string, int> &Target, TargetKind ExpectedKind, const std::string &Context) {
         if (CurTok != tok_identifier) {
             LogErrorStmt("Expected identifier for register name");
-            return {"", -1};
+            return false;
         }
 
         // Consume identifier
@@ -78,26 +80,63 @@ namespace quantum {
         // Consume '['
         if (CurTok != '[') {
             LogErrorStmt("Expected '[' after register name");
-            return {"", -1};
+            return false;
         }
         getNextToken();
 
         // Consume integer
         if (CurTok != tok_integer) {
             LogErrorStmt("Expected integer index inside '[' ']'");
-            return {"", -1};
-        }  
+            return false;
+        }
+
         int index = lex.getNumVal();
-        getNextToken(); 
+        getNextToken();
 
         // Consume ']'
         if (CurTok != ']') {
             LogErrorStmt("Expected ']' after register index");
-            return {"", -1};
+            return false;
         }
         getNextToken();
 
-        return {regName, index};
+        // Verify that the register exists
+        auto regIt = Registers.find(regName);
+        if (regIt == Registers.end()) {
+            LogErrorStmt("Register '" + regName + "' is not declared before use in " + Context);
+            return false;
+        }
+
+        // Verify that the register kind matches the expected kind
+        const auto &regInfo = regIt->second;
+        if ((ExpectedKind == TargetKind::Quantum && !regInfo.IsQuantum) ||
+            (ExpectedKind == TargetKind::Classical && regInfo.IsQuantum)) {
+            LogErrorStmt("Register '" + regName + "' has the wrong kind for " + Context);
+            return false;
+        }
+
+        // Verify that the index is within bounds
+        if (index < 0 || index >= regInfo.Size) {
+            LogErrorStmt("Index out of range for register '" + regName + "' in " + Context);
+            return false;
+        }
+
+        Target = {regName, index};
+        return true;
+    }
+
+    bool Parser::isSupportedGate(const std::string &GateName) const {
+        return GateName == "h" || GateName == "x" || GateName == "y" || GateName == "z" ||
+               GateName == "s" || GateName == "t" || GateName == "cx" ||
+               GateName == "rx" || GateName == "ry" || GateName == "rz";
+    }
+
+    bool Parser::gateExpectsParameter(const std::string &GateName) const {
+        return GateName == "rx" || GateName == "ry" || GateName == "rz";
+    }
+
+    size_t Parser::gateTargetCount(const std::string &GateName) const {
+        return GateName == "cx" ? 2 : 1;
     }
 
     std::unique_ptr<StatementAST> Parser::parseOpenQASMVersion() {
@@ -159,18 +198,29 @@ namespace quantum {
         if (CurTok != ';') return LogErrorStmt("Expected ';' after register declaration");
         getNextToken();
 
+        Registers[name] = {isQuantum, size};
+
         return std::make_unique<RegisterDeclarationAST>(isQuantum, name, size);
     }
 
     std::unique_ptr<StatementAST> Parser::parseGate() {
         // Consume identifier
         std::string gateName = lex.getIdentifierStr();
+        if (!isSupportedGate(gateName)) {
+            return LogErrorStmt("Unsupported gate: '" + gateName + "'");
+        }
+
         getNextToken();
 
+        const bool expectsParameter = gateExpectsParameter(gateName);
         std::vector<std::unique_ptr<ExpressionAST>> params;
 
         // Parse single param
         if (CurTok == '(') {
+            if (!expectsParameter) {
+                return LogErrorStmt("Gate '" + gateName + "' does not take parameters");
+            }
+
             // Consume '('
             getNextToken();
 
@@ -185,17 +235,35 @@ namespace quantum {
 
             // Consume ')'
             getNextToken();
+        } else if (expectsParameter) {
+            return LogErrorStmt("Gate '" + gateName + "' expects one parameter");
+        }
+
+        if (CurTok == '(') {
+            return LogErrorStmt("Gate '" + gateName + "' expects exactly one parameter");
         }
 
         std::vector<std::pair<std::string, int>> targets;
 
-        // Parse the first target
-        targets.push_back(parseTarget());
+        // Parse and validate all targets
+        while (true) {
+            std::pair<std::string, int> target;
+            if (!parseTarget(target, TargetKind::Quantum, "gate '" + gateName + "'")) {
+                return nullptr;
+            }
+            targets.push_back(std::move(target));
 
-        // Parse additional targets separated by commas (es. cx q[0], q[1])
-        while (CurTok == ',') {
+            // Stop if there is no comma, otherwise consume it and continue parsing targets
+            if (CurTok != ',') {
+                break;
+            }
+
             getNextToken();
-            targets.push_back(parseTarget());
+        }
+
+        // Verify the gate has the correct number of targets
+        if (targets.size() != gateTargetCount(gateName)) {
+            return LogErrorStmt("Gate '" + gateName + "' expects " + std::to_string(gateTargetCount(gateName)) + " target qubit(s)");
         }
 
         // Consume ';'
@@ -209,19 +277,24 @@ namespace quantum {
         // Consume 'measure'
         getNextToken();
 
-        // Parse target
-        auto qubit = parseTarget();
-        if (qubit.second == -1) return nullptr;
+        // Parse source
+        std::pair<std::string, int> qubit;
+        if (!parseTarget(qubit, TargetKind::Quantum, "measurement source")) return nullptr;
 
         // Consume '->'
-        if (CurTok != '-' || getNextToken() != '>') {
+        if (CurTok != '-') {
             return LogErrorStmt("Expected '->' after measure target");
         }
-        getNextToken(); 
+        getNextToken();
+
+        if (CurTok != '>') {
+            return LogErrorStmt("Expected '->' after measure target");
+        }
+        getNextToken();
 
         // Parse target
-        auto cbit = parseTarget();
-        if (cbit.second == -1) return nullptr; 
+        std::pair<std::string, int> cbit;
+        if (!parseTarget(cbit, TargetKind::Classical, "measurement destination")) return nullptr;
 
         // Consume ';'
         if (CurTok != ';') return LogErrorStmt("Expected ';' after measure statement");
@@ -232,12 +305,12 @@ namespace quantum {
 
     std::unique_ptr<StatementAST> Parser::parseStatement() {
         switch (CurTok) {
-            case tok_openqasm: return parseOpenQASMVersion();
-            case tok_include:  return parseInclude();
+            case tok_openqasm:      return parseOpenQASMVersion();
+            case tok_include:       return parseInclude();
             case tok_qreg:
-            case tok_creg:     return parseRegisterDecl();
-            case tok_measure:  return parseMeasure();
-            case tok_identifier: return parseGate();
+            case tok_creg:          return parseRegisterDecl();
+            case tok_measure:       return parseMeasure();
+            case tok_identifier:    return parseGate();
             default:
                 return LogErrorStmt("Unknown statement in OpenQASM file");
         }

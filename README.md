@@ -80,6 +80,8 @@ PrimaryExpr  ::= Float | Integer | "pi"
 BinaryOp     ::= "+" | "-" | "*" | "/"
 ```
 
+The parser accepts the gates above syntactically. The optimization pipeline currently targets the subset `h`, `x`, `y`, `z`, `cx`, `rx`, `ry`, `rz`; `s`, `t`, and `measure` remain recognized by the parser but are not part of the optimization path.
+
 ## 💻 Usage
 *This section will be updated as the compiler development progresses*
 
