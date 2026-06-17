@@ -13,8 +13,8 @@ namespace quantum {
     void BinaryOpAST::dump(int indent) const {
         printIndent(indent);
         std::cout << "BinaryOp: '" << Op << "'\n";
-        LHS -> dump(indent + 2);
-        RHS -> dump(indent + 2);
+        LHS->dump(indent + 2);
+        RHS->dump(indent + 2);
     }
 
     void FloatExprAST::dump(int indent) const {
@@ -41,7 +41,7 @@ namespace quantum {
             printIndent(indent + 2);
             std::cout << "Params:\n";
             for (const auto& param : Params) {
-                param -> dump(indent + 4);
+                param->dump(indent + 4);
             }
         }
         
@@ -76,7 +76,7 @@ namespace quantum {
         std::cout << "ProgramAST\n";
         
         for (const auto& stmt : Statements) {
-            stmt -> dump(indent + 2);
+            stmt->dump(indent + 2);
         }
     }
 

@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
         auto ast = parser.parseProgram();
         
         if (ast && !parser.hasError()) {
-            ast -> dump();
+            ast->dump();
         } else {
             std::cerr << "\nParsing failed due to syntax errors.\n";
             return 1;
