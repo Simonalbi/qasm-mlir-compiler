@@ -82,6 +82,69 @@ BinaryOp     ::= "+" | "-" | "*" | "/"
 
 The parser accepts the gates above syntactically. The optimization pipeline currently targets the subset `h`, `x`, `y`, `z`, `cx`, `rx`, `ry`, `rz`; `s`, `t`, and `measure` remain recognized by the parser but are not part of the optimization path.
 
+## ⚛️ MLIR Quantum Dialect (SSA-style)
+
+This compiler models quantum circuits internally using a custom MLIR dialect (`quantum`). To facilitate safe, deterministic optimization passes (like cancelling adjacent $H$ gates or fusing rotations), the dialect enforces strict **Value Semantics (SSA-style)**. In this paradigm, qubits are not updated "in place" in a global memory array. Instead, every quantum gate consumes an input qubit value and produces a *new* qubit value representing the updated state.
+
+### Design Philosophy & Constraints
+
+The chosen architecture is specifically designed around the mathematical and physical constraints of quantum circuits:
+
+#### Value Semantics & No-Cloning
+In a standard SSA representation, a value could theoretically be used multiple times. However, quantum mechanics dictates that unknown states cannot be duplicated (No-Cloning Theorem). By modeling gates to consume an input qubit and return a *new* qubit, the dialect natively reflects state evolution over time. Attempting to branch a quantum state (e.g., `%q1 = quantum.h %q0; %q2 = quantum.h %q0`) breaks the linear flow of the SSA chain and can be structurally intercepted by MLIR verifiers to prevent unphysical cloning.
+
+#### Topological Adjacency for Pattern Matching
+By avoiding global array mutations and using direct SSA value consumption, the Intermediate Representation becomes a strict dataflow graph. This design anticipates optimization passes (like auto-inverse cancellation). Recognizing that two CNOT gates are structurally adjacent does not require checking if they act on variables with the same string names; it only requires matching the topological pattern `op(op(x))`, making optimization safe and trivial through MLIR pattern rewriting.
+
+### Types
+
+| Type | Description |
+|---|---|
+| `!quantum.qubit` | Represents a single, versioned quantum bit. |
+| `!quantum.qreg<N>` | Represents a register of `N` qubits. |
+
+### Supported Operations
+
+The dialect models the core gate set from the OpenQASM 2.0 subset:
+
+#### Unary Gates (No Parameters)
+| Operation | Signature | Description |
+|---|---|---|
+| `quantum.h` | `(qubit) -> qubit` | Hadamard gate |
+| `quantum.x` | `(qubit) -> qubit` | Pauli-X gate |
+| `quantum.y` | `(qubit) -> qubit` | Pauli-Y gate |
+| `quantum.z` | `(qubit) -> qubit` | Pauli-Z gate |
+| `quantum.s` | `(qubit) -> qubit` | Phase (S) gate |
+| `quantum.t` | `(qubit) -> qubit` | $\pi/8$ (T) gate |
+
+#### Parameterized Unary Gates
+| Operation | Signature | Description |
+|---|---|---|
+| `quantum.rx` | `(f64, qubit) -> qubit` | Rotation around X-axis |
+| `quantum.ry` | `(f64, qubit) -> qubit` | Rotation around Y-axis |
+| `quantum.rz` | `(f64, qubit) -> qubit` | Rotation around Z-axis |
+
+#### Binary Gates
+| Operation | Signature | Description |
+|---|---|---|
+| `quantum.cx` | `(qubit, qubit) -> qubit, qubit` | Controlled-NOT (CNOT) gate |
+
+#### Measurement and Extraction
+| Operation | Signature | Description |
+|---|---|---|
+| `quantum.measure` | `(qubit) -> qubit, i1` | Measures a qubit, yielding the updated qubit and a classical bit |
+| `quantum.extract` | `(qreg, i64) -> qubit` | Extracts an SSA qubit value from a `qreg` array |
+
+### Example IR
+A simple quantum snippet like `h q[0];` embedded in a function becomes:
+```mlir
+func.func @circuit(%qreg: !quantum.qreg<1>) {
+  %q_0 = quantum.extract %qreg[0] : !quantum.qreg<1> -> !quantum.qubit
+  %q_1 = quantum.h %q_0 : !quantum.qubit -> !quantum.qubit
+  func.return
+}
+```
+
 ## 💻 Usage
 *This section will be updated as the compiler development progresses*
 
@@ -124,6 +187,21 @@ ProgramAST
   ...
 ```
 
+### ⚛️ MLIR Dialect & Verification
+The `quantum-opt` tool acts as the MLIR driver for the custom `quantum` dialect. It is used to parse, verify, and transform quantum IR files (`.mlir`).
+
+**Verify Semantic Diagnostics:** 
+Run the tool with `--verify-diagnostics` to ensure that custom verifiers correctly block invalid operations (e.g., passing wrong types to a gate):
+```bash
+./build/quantum-opt invalid.mlir --verify-diagnostics
+```
+
+**Round-Trip Parsing & Printing:** 
+Combine `quantum-opt` with LLVM's `FileCheck` to verify that the dialect parses and prints perfectly without loss of information:
+```bash
+.quantum-opt valid.mlir | ./llvm-project/build/bin/FileCheck valid.mlir
+```
+
 ### ⚙️ Optimization (Planned usage)
 Use the `qcc` tool to optimize a `qasm` file.
 ```bash
@@ -132,7 +210,7 @@ qcc input.qasm --optimize -emit=qasm -o output.qasm
 
 ## 📋 Project Roadmap
 The development of this compiler is divided into the following milestones:
-- [ ] **Task 1:** Parser and AST generation from OpenQASM subset.
+- [x] **Task 1:** Parser and AST generation from OpenQASM subset.
 - [ ] **Task 2:** Custom `quantum` dialect definition in MLIR (ODS/TableGen).
 - [ ] **Task 3:** MLIRGen (AST visitor to SSA-style Intermediate Representation).
 - [ ] **Task 4:** Pass 1 - Auto-inverse gate cancellation (e.g., H-H).
