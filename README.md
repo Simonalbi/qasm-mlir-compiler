@@ -157,7 +157,7 @@ qparse input.qasm
 ```
 
 ```bash
-===== Lexical Analysis of tests/Frontend/inputs/valid/valid_5.qasm =====
+===== Lexical Analysis of tests/Frontend/inputs/valid/comprehensive.qasm =====
 Line 1     Col 1    | Keyword: OPENQASM
 Line 1     Col 10   | Float: 2
 Line 1     Col 13   | Symbol: ';'
@@ -179,7 +179,7 @@ qparse input.qasm --dump-ast
 ```
 
 ```bash
-===== Parsing and AST Dump of tests/Frontend/inputs/valid/valid_5.qasm =====
+===== Parsing and AST Dump of tests/Frontend/inputs/valid/comprehensive.qasm =====
 ProgramAST
   OpenQASMVersion: 2
   Include: "qelib1.inc"
@@ -193,13 +193,13 @@ The `quantum-opt` tool acts as the MLIR driver for the custom `quantum` dialect.
 **Verify Semantic Diagnostics:** 
 Run the tool with `--verify-diagnostics` to ensure that custom verifiers correctly block invalid operations (e.g., passing wrong types to a gate):
 ```bash
-./build/quantum-opt invalid.mlir --verify-diagnostics
+./build/quantum-opt input.mlir --verify-diagnostics
 ```
 
 **Round-Trip Parsing & Printing:** 
 Combine `quantum-opt` with LLVM's `FileCheck` to verify that the dialect parses and prints perfectly without loss of information:
 ```bash
-.quantum-opt valid.mlir | ./llvm-project/build/bin/FileCheck valid.mlir
+.quantum-opt input.mlir | ./llvm-project/build/bin/FileCheck input.mlir
 ```
 
 ### ⚙️ Optimization (Planned usage)

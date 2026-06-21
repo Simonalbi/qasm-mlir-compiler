@@ -1,3 +1,10 @@
+// RUN: qparse %s.qasm
+
+// This file is a comprehensive integration test for the OpenQASM subset.
+// It exercises every supported language construct in a single file,
+// including all unary and binary gates, complex mathematical expressions
+// in parameters (like unary minus and divisions), and measurements.
+
 OPENQASM 2.0;
 include "qelib1.inc";
 
