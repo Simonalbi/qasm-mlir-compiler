@@ -19,7 +19,7 @@ def Quantum_Dialect : Dialect {
     It models qubits using strict value semantics (SSA-style), where each quantum gate 
     consumes an input qubit value and produces a new updated qubit value.
     This representation enables safe and direct pattern matching for optimization
-    passes like auto-inverse cancellation (e.g., H(H(x)) -> x) and rotation fusion.
+    passes like auto-inverse cancellation (e.g., H(H(x)) -> x).
 
     The dialect supports types like `!quantum.qubit` and `!quantum.qreg<N>`, and a core 
     gate set including {h, x, y, z, s, t, rx, ry, rz, cx, measure}.

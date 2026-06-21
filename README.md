@@ -1,5 +1,5 @@
 # Quantum Compiler: OpenQASM 2.0 to MLIR
-This project is a quantum compiler developed as a thesis project. It takes as input code written in a subset of **OpenQASM 2.0**, generates an Abstract Syntax Tree (AST), lowers it into the **MLIR** framework (creating a custom `quantum` dialect), and performs circuit optimization passes (e.g., auto-inverse gate cancellation, rotation fusion). Finally, it re-emits optimized OpenQASM code and verifies semantic equivalence via simulation using Qiskit.
+This project is a quantum compiler developed as a thesis project. It takes as input code written in a subset of **OpenQASM 2.0**, generates an Abstract Syntax Tree (AST), lowers it into the **MLIR** framework (creating a custom `quantum` dialect), and performs circuit optimization passes (e.g., auto-inverse gate cancellation). Finally, it re-emits optimized OpenQASM code and verifies semantic equivalence via simulation using Qiskit.
 
 ## 🛠️ System Prerequisites
 To compile the project and the underlying LLVM/MLIR framework, ensure you have the following packages installed:
@@ -84,7 +84,7 @@ The parser accepts the gates above syntactically. The optimization pipeline curr
 
 ## ⚛️ MLIR Quantum Dialect (SSA-style)
 
-This compiler models quantum circuits internally using a custom MLIR dialect (`quantum`). To facilitate safe, deterministic optimization passes (like cancelling adjacent $H$ gates or fusing rotations), the dialect enforces strict **Value Semantics (SSA-style)**. In this paradigm, qubits are not updated "in place" in a global memory array. Instead, every quantum gate consumes an input qubit value and produces a *new* qubit value representing the updated state.
+This compiler models quantum circuits internally using a custom MLIR dialect (`quantum`). To facilitate safe, deterministic optimization passes (like cancelling adjacent $H$ gates), the dialect enforces strict **Value Semantics (SSA-style)**. In this paradigm, qubits are not updated "in place" in a global memory array. Instead, every quantum gate consumes an input qubit value and produces a *new* qubit value representing the updated state.
 
 ### Design Philosophy & Constraints
 
@@ -213,7 +213,6 @@ The development of this compiler is divided into the following milestones:
 - [x] **Task 1:** Parser and AST generation from OpenQASM subset.
 - [ ] **Task 2:** Custom `quantum` dialect definition in MLIR (ODS/TableGen).
 - [ ] **Task 3:** MLIRGen (AST visitor to SSA-style Intermediate Representation).
-- [ ] **Task 4:** Pass 1 - Auto-inverse gate cancellation (e.g., H-H).
-- [ ] **Task 5:** Pass 2 - Rotation fusion and parameter cleanup.
-- [ ] **Task 6:** Backend - Re-emission of optimized OpenQASM code.
-- [ ] **Task 7:** End-to-end equivalence verification via Qiskit Aer simulation.
+- [ ] **Task 4:** Optimization Pass - Auto-inverse gate cancellation (e.g., H-H).
+- [ ] **Task 5:** Backend - Re-emission of optimized OpenQASM code.
+- [ ] **Task 6:** End-to-end equivalence verification via Qiskit Aer simulation.

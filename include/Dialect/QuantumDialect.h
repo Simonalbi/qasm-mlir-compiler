@@ -17,4 +17,4 @@
 #define GET_OP_CLASSES
 #include "QuantumOps.h.inc"
 
-#endif // QUANTUM_DIALECT_H
+#endif
