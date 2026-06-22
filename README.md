@@ -1,4 +1,13 @@
-# Quantum Compiler: OpenQASM 2.0 to MLIR
+# Quantum Compiler: OpenQASM 2.0 Subset to MLIR
+
+<p>
+  <img src="https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++" />
+  <img src="https://img.shields.io/badge/LLVM_%2F_MLIR-1f2532?style=for-the-badge" alt="LLVM/MLIR" />
+  <img src="https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white" alt="CMake" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Qiskit-6929C4?style=for-the-badge&logo=qiskit&logoColor=white" alt="Qiskit" />
+</p>
+
 This project is a quantum compiler developed as a thesis project. It takes as input code written in a subset of **OpenQASM 2.0**, generates an Abstract Syntax Tree (AST), lowers it into the **MLIR** framework (creating a custom `quantum` dialect), and performs circuit optimization passes (e.g., auto-inverse gate cancellation). Finally, it re-emits optimized OpenQASM code and verifies semantic equivalence via simulation using Qiskit.
 
 ## 🛠️ System Prerequisites
