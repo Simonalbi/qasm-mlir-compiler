@@ -31,6 +31,54 @@ namespace quantum {
         return LogErrorExpr("Expected expression (float or 'pi')");
     }
 
+    int Parser::getTokPrecedence(int tok) {
+        switch (tok) {
+            case '+':
+            case '-':
+                return 20;
+            case '*':
+            case '/':
+                return 40;
+            default:
+                return -1;
+        }
+    }
+
+    std::unique_ptr<ExpressionAST> Parser::parseBinOpRHS(int ExprPrec, std::unique_ptr<ExpressionAST> LHS) {
+        while (true) {
+            int TokPrec = getTokPrecedence(CurTok);
+
+            // If this is a binary operator that binds at least as tightly as
+            // the current precedence, consume it, otherwise we are done
+            if (TokPrec < ExprPrec) {
+                return LHS;
+            }
+
+            // Consume the binary operator
+            int BinOp = CurTok;
+            getNextToken();
+
+            // Parse the primary expression after the binary operator
+            auto RHS = parsePrimaryExpr();
+            if (!RHS) {
+                return nullptr;
+            }
+
+            // If the binary operator binds less tightly with RHS than the
+            // operator after RHS, let the pending operator take RHS as its LHS
+            int NextPrec = getTokPrecedence(CurTok);
+            if (TokPrec < NextPrec) {
+                RHS = parseBinOpRHS(TokPrec + 1, std::move(RHS));
+                if (!RHS) {
+                    return nullptr;
+                }
+            }
+
+            // Merge LHS/RHS
+            LHS = std::make_unique<BinaryOpAST>(BinOp, std::move(LHS), std::move(RHS));
+        }
+    }
+
     std::unique_ptr<ExpressionAST> Parser::parseExpression() {
         // Consume '-'
         bool isNegative = false;
@@ -49,22 +97,8 @@ namespace quantum {
             LHS = std::make_unique<BinaryOpAST>('*', std::move(minusOne), std::move(LHS));
         }
 
-        // Check for binary operator
-        if (CurTok == '+' || CurTok == '-' || CurTok == '*' || CurTok == '/') {
-            // Consume operator
-            char Op = CurTok;
-            getNextToken();
-
-            // Parse RHS
-            auto RHS = parsePrimaryExpr();
-            if (!RHS) return nullptr;
-
-            // Return a BinaryOpAST node
-            return std::make_unique<BinaryOpAST>(Op, std::move(LHS), std::move(RHS));
-        }
-
-        // If there was no operator (e.g. just 'pi'), simply return the LHS
-        return LHS;
+        // Parse any binary operators with precedence
+        return parseBinOpRHS(0, std::move(LHS));
     }
 
     bool Parser::parseTarget(std::pair<std::string, int> &Target, TargetKind ExpectedKind, const std::string &Context) {

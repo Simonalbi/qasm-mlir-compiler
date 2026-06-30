@@ -156,7 +156,7 @@ namespace quantum {
         advance();
 
         // Cheks for OpenQASM 2.0 valid symbols based on the current subset (https://openqasm.com/grammar/index.html)
-        if (strchr("()[];,->*/", ThisChar)) {
+        if (strchr("()[];,->*/+-", ThisChar)) {
             return ThisChar;
         }
 

@@ -65,9 +65,19 @@ namespace quantum {
          * @brief Parses a primary expression (a single number or 'pi').
          */
         std::unique_ptr<ExpressionAST> parsePrimaryExpr();
+
+        /**
+         * @brief Helper to get the precedence of a binary operator token.
+         */
+        int getTokPrecedence(int tok);
+
+        /**
+         * @brief Parses the right-hand side of a binary operation recursively based on precedence.
+         */
+        std::unique_ptr<ExpressionAST> parseBinOpRHS(int ExprPrec, std::unique_ptr<ExpressionAST> LHS);
         
         /**
-         * @brief Parses an expression (e.g., `pi`, `1.57`, `pi/2`).
+         * @brief Parses an expression (e.g., `pi`, `1.57`, `pi/2`, `2*pi/4`).
          */
         std::unique_ptr<ExpressionAST> parseExpression();
 
