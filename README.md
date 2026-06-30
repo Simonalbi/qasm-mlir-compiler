@@ -220,7 +220,7 @@ qcc input.qasm --optimize -emit=qasm -o output.qasm
 ## 📋 Project Roadmap
 The development of this compiler is divided into the following milestones:
 - [x] **Task 1:** Parser and AST generation from OpenQASM subset.
-- [ ] **Task 2:** Custom `quantum` dialect definition in MLIR (ODS/TableGen).
+- [x] **Task 2:** Custom `quantum` dialect definition in MLIR (ODS/TableGen).
 - [ ] **Task 3:** MLIRGen (AST visitor to SSA-style Intermediate Representation).
 - [ ] **Task 4:** Optimization Pass - Auto-inverse gate cancellation (e.g., H-H).
 - [ ] **Task 5:** Backend - Re-emission of optimized OpenQASM code.

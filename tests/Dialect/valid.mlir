@@ -1,4 +1,4 @@
-// RUN: ./build/quantum-opt %s.mlir | ./llvm-project/build/bin/FileCheck %s.mlir
+// RUN: ./build/quantum-opt %s | ./llvm-project/build/bin/FileCheck %s
 
 // This file contains a semantically valid quantum circuit.
 // The goal is to verify that the tool correctly reads the IR text,

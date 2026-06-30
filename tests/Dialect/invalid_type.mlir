@@ -1,4 +1,4 @@
-// RUN: ./build/quantum-opt %s.mlir --verify-diagnostics
+// RUN: ./build/quantum-opt %s --verify-diagnostics
 
 // This file tests that the TableGen-generated verifier
 // correctly identifies invalid types passed to the 'quantum.cx'
