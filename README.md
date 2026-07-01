@@ -205,6 +205,12 @@ Run the tool with `--verify-diagnostics` to ensure that custom verifiers correct
 ./build/quantum-opt input.mlir --verify-diagnostics
 ```
 
+**Verify No-Cloning Theorem:**
+Run the tool with the custom `--quantum-verify-no-cloning` pass to ensure that all `!quantum.qubit` values are consumed exactly once. This rigorously enforces the quantum No-Cloning Theorem by validating that qubits are neither branched (cloned) nor lost (leaked) during circuit execution:
+```bash
+./build/quantum-opt input.mlir --quantum-verify-no-cloning
+```
+
 **Round-Trip Parsing & Printing:** 
 Combine `quantum-opt` with LLVM's `FileCheck` to verify that the dialect parses and prints perfectly without loss of information:
 ```bash
