@@ -42,6 +42,7 @@ target_include_directories(Frontend PUBLIC include)
 # MLIR Libraries
 add_library(QuantumDialect 
     lib/Dialect/QuantumDialect.cpp
+    lib/Dialect/NoCloningVerifierPass.cpp
 )
 add_dependencies(QuantumDialect QuantumIncGen)
 target_include_directories(QuantumDialect PUBLIC include)
