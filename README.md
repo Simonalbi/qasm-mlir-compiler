@@ -147,10 +147,10 @@ The dialect models the core gate set from the OpenQASM 2.0 subset:
 ### Example IR
 A simple quantum snippet like `h q[0];` embedded in a function becomes:
 ```mlir
-func.func @circuit(%qreg: !quantum.qreg<1>) {
+func.func @circuit(%qreg: !quantum.qreg<1>) -> !quantum.qubit {
   %q_0 = quantum.extract %qreg[0] : !quantum.qreg<1> -> !quantum.qubit
   %q_1 = quantum.h %q_0 : !quantum.qubit -> !quantum.qubit
-  func.return
+  return %q_1 : !quantum.qubit
 }
 ```
 

@@ -6,7 +6,7 @@
 // as input to multiple quantum operations, and cannot be discarded
 // without being used.
 
-func.func @test_cloning(%qreg: !quantum.qreg<2>) {
+func.func @circuit(%qreg: !quantum.qreg<2>) {
   // Extract a single qubit. This qubit (%q0) is used twice (cloning violation).
   // expected-error @+1 {{No-Cloning theorem violated: a qubit value must be used exactly once.}}
   %q0 = quantum.extract %qreg[0] : !quantum.qreg<2> -> !quantum.qubit
@@ -22,7 +22,7 @@ func.func @test_cloning(%qreg: !quantum.qreg<2>) {
 }
 
 // expected-error @+1 {{No-Cloning theorem violated: a block argument qubit must be used exactly once.}}
-func.func @test_block_arg_cloning(%q0: !quantum.qubit) {
+func.func @circuit_block_arg(%q0: !quantum.qubit) {
   // The block argument %q0 is passed to both H and X gates (cloning).
   // expected-error @+1 {{No-Cloning theorem violated: a qubit value must be used exactly once.}}
   %q1 = quantum.h %q0 : !quantum.qubit -> !quantum.qubit

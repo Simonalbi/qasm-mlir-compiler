@@ -4,9 +4,9 @@
 // The goal is to verify that the tool correctly reads the IR text,
 // builds the circuit in memory, and prints it back verbatim without data loss
 // (Round-Trip). FileCheck ensures that the output strictly matches
-// the patterns specified in the "CHECK:" directives line by line.
+// the patterns specified in the CHECK directives line by line.
 
-func.func @test_gates(%qreg: !quantum.qreg<2>) {
+func.func @circuit(%qreg: !quantum.qreg<2>) -> (!quantum.qubit, !quantum.qubit) {
   // Test for qreg and extract
   // CHECK: %{{.*}} = quantum.extract %{{.*}}[0] : <2> -> !quantum.qubit
   %q0 = quantum.extract %qreg[0] : !quantum.qreg<2> -> !quantum.qubit
@@ -30,5 +30,6 @@ func.func @test_gates(%qreg: !quantum.qreg<2>) {
   // CHECK: %{{.*}}, %{{.*}} = quantum.measure %{{.*}} : !quantum.qubit -> !quantum.qubit, i1
   %q0_m, %bit = quantum.measure %q0_cx : !quantum.qubit -> !quantum.qubit, i1
 
-  func.return
+  // CHECK: return %{{.*}}, %{{.*}} : !quantum.qubit, !quantum.qubit
+  return %q0_m, %q1_rx : !quantum.qubit, !quantum.qubit
 }
