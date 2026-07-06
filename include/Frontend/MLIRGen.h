@@ -23,7 +23,6 @@ namespace quantum {
     * @return An owning reference to the generated MLIR ModuleOp, or null on failure.
     */
     mlir::OwningOpRef<mlir::ModuleOp> mlirGen(mlir::MLIRContext &context, ProgramAST &ast);
-
 }
 
 #endif

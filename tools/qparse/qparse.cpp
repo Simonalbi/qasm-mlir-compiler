@@ -5,7 +5,6 @@
 
 #include "mlir/IR/MLIRContext.h"
 #include "mlir/IR/BuiltinOps.h"
-#include "mlir/IR/AsmState.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 
 #include <iostream>
@@ -79,8 +78,6 @@ int main(int argc, char* argv[]) {
 
     // MLIR emission (--emit-mlir)
     if (emitMLIR) {
-        std::cout << "===== Parsing and MLIR Generation of " << filename << " =====\n";
-        
         Parser parser(lexer);
         auto ast = parser.parseProgram();
         if (!ast || parser.hasError()) {
