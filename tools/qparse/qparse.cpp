@@ -1,5 +1,12 @@
 #include "Frontend/Lexer.h"
 #include "Frontend/Parser.h"
+#include "Frontend/MLIRGen.h"
+#include "Dialect/QuantumDialect.h"
+
+#include "mlir/IR/MLIRContext.h"
+#include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/AsmState.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
 
 #include <iostream>
 #include <fstream>
@@ -31,17 +38,21 @@ void printToken(int tok, const Lexer& lexer) {
 int main(int argc, char* argv[]) {
     // Args check
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_file.qasm> [--dump-ast]\n";
+        std::cerr << "Usage: " << argv[0] << " <path_to_file.qasm> [--dump-ast] [--emit-mlir]\n";
         return 1;
     }
 
+    // Parse command line arguments
     std::string filename = "";
     bool dumpAST = false;
+    bool emitMLIR = false;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--dump-ast") {
             dumpAST = true;
+        } else if (arg == "--emit-mlir") {
+            emitMLIR = true;
         } else if (arg[0] != '-') {
             filename = arg;
         } else {
@@ -66,7 +77,33 @@ int main(int argc, char* argv[]) {
     // Lexer initialization
     Lexer lexer(inputFile);
 
-    if (dumpAST) { // AST dumping
+    // MLIR emission (--emit-mlir)
+    if (emitMLIR) {
+        std::cout << "===== Parsing and MLIR Generation of " << filename << " =====\n";
+        
+        Parser parser(lexer);
+        auto ast = parser.parseProgram();
+        if (!ast || parser.hasError()) {
+            std::cerr << "Parsing failed.\n";
+            return 1;
+        }
+        
+        mlir::MLIRContext context;
+        context.getOrLoadDialect<mlir::quantum::QuantumDialect>();
+        context.getOrLoadDialect<mlir::func::FuncDialect>();
+        
+        auto module = quantum::mlirGen(context, *ast);
+        if (!module) {
+            std::cerr << "MLIR generation failed.\n";
+            return 1;
+        }
+        
+        module->print(llvm::outs());
+        return 0;
+    }
+
+    // AST dumping (--dump-ast)
+    if (dumpAST) {
         std::cout << "===== Parsing and AST Dump of " << filename << " =====\n";
         
         Parser parser(lexer);
@@ -78,7 +115,7 @@ int main(int argc, char* argv[]) {
             std::cerr << "\nParsing failed due to syntax errors.\n";
             return 1;
         }
-    } else { // Tokens printing
+    } else if (!emitMLIR) { // Tokens printing
         std::cout << "===== Lexical Analysis of " << filename << " =====\n";
 
         int tok;

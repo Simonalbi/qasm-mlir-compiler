@@ -19,6 +19,9 @@ compile_commands.json
 # VS Code local configuration
 .vscode/
 
+# JetBrains IDEs local configuration
+.idea/
+
 # Object files and executables
 *.o
 *.a

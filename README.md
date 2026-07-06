@@ -157,8 +157,8 @@ func.func @circuit(%qreg: !quantum.qreg<1>) {
 ## 💻 Usage
 *This section will be updated as the compiler development progresses*
 
-### 🔍 Frontend (Parser & AST)
-Use the `qparse` tool to perform lexical and syntactic analysis of OpenQASM 2.0 source files.
+### 🔍 Frontend (Parser, AST & MLIR Generation)
+Use the `qparse` tool to perform lexical analysis, syntactic analysis, and intermediate representation (IR) lowering of OpenQASM 2.0 source files.
 
 **Validate syntax:** Checks if the provided file is a valid OpenQASM subset. It will halt and report precise line/column diagnostics on lexical or syntax errors.
 ```bash
@@ -194,6 +194,26 @@ ProgramAST
   Include: "qelib1.inc"
   QRegDecl 'q' [3]
   ...
+```
+
+**Generate MLIR:** Generate Single Static Assignment (SSA) MLIR operations using the custom `quantum` dialect.
+```bash
+qparse input.qasm --emit-mlir
+```
+
+```mlir
+module {
+  func.func @circuit(%arg0: !quantum.qreg<2>) -> (!quantum.qubit, !quantum.qubit) {
+    %0 = quantum.extract %arg0[0] : <2> -> !quantum.qubit
+    %1 = quantum.extract %arg0[1] : <2> -> !quantum.qubit
+    %2 = quantum.h %0 : !quantum.qubit -> !quantum.qubit
+    %ctrl_out, %target_out = quantum.cx %2, %1 : !quantum.qubit, !quantum.qubit -> !quantum.qubit, !quantum.qubit
+    %3 = quantum.rx 3.140000e+00, %ctrl_out : !quantum.qubit -> !quantum.qubit
+    %4 = quantum.rz 3.1415926535897931, %target_out : !quantum.qubit -> !quantum.qubit
+    %q_out, %res = quantum.measure %3 : !quantum.qubit -> !quantum.qubit, i1
+    return %q_out, %4 : !quantum.qubit, !quantum.qubit
+  }
+}
 ```
 
 ### ⚛️ MLIR Dialect & Verification

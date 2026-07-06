@@ -37,8 +37,7 @@ def Quantum_Dialect : Dialect {
 //===----------------------------------------------------------------------===//
 
 // Base type definition for quantum types
-class Quantum_Type<string name, string typeMnemonic, list<Trait> traits = []>
-    : TypeDef<Quantum_Dialect, name, traits> {
+class Quantum_Type<string name, string typeMnemonic, list<Trait> traits = []> : TypeDef<Quantum_Dialect, name, traits> {
   let mnemonic = typeMnemonic;
 }
 
@@ -70,20 +69,17 @@ def QregType : Quantum_Type<"Qreg", "qreg"> {
 //===----------------------------------------------------------------------===//
 
 // Base class for all quantum operations
-class Quantum_Op<string mnemonic, list<Trait> traits = []> :
-    Op<Quantum_Dialect, mnemonic, traits>;
+class Quantum_Op<string mnemonic, list<Trait> traits = []> :  Op<Quantum_Dialect, mnemonic, traits>;
 
 // Unary gate base class (no parameters, 1 qubit in, 1 qubit out)
-class Quantum_UnaryGate<string mnemonic, list<Trait> traits = [Pure]> :
-    Quantum_Op<mnemonic, traits> {
+class Quantum_UnaryGate<string mnemonic, list<Trait> traits = [Pure]> : Quantum_Op<mnemonic, traits> {
   let arguments = (ins QubitType:$q_in);
   let results = (outs QubitType:$q_out);
   let assemblyFormat = "$q_in attr-dict `:` type($q_in) `->` type($q_out)";
 }
 
 // Unary parameterized gate base class (1 parameter, 1 qubit in, 1 qubit out)
-class Quantum_UnaryParamGate<string mnemonic, list<Trait> traits = [Pure]> :
-    Quantum_Op<mnemonic, traits> {
+class Quantum_UnaryParamGate<string mnemonic, list<Trait> traits = [Pure]> : Quantum_Op<mnemonic, traits> {
   let arguments = (ins F64Attr:$theta, QubitType:$q_in);
   let results = (outs QubitType:$q_out);
   let assemblyFormat = "$theta `,` $q_in attr-dict `:` type($q_in) `->` type($q_out)";

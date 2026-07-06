@@ -35,9 +35,16 @@ add_library(Frontend
     lib/Frontend/Lexer.cpp
     lib/Frontend/Parser.cpp
     lib/Frontend/AST.cpp
+    lib/Frontend/MLIRGen.cpp
 )
 
 target_include_directories(Frontend PUBLIC include)
+target_link_libraries(Frontend PUBLIC 
+    QuantumDialect
+    MLIRIR
+    MLIRFuncDialect
+    MLIRSupport
+)
 
 # MLIR Libraries
 add_library(QuantumDialect 
