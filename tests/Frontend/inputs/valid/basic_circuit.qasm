@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file contains a standard, valid quantum circuit implementation.
 // It serves as a baseline test to ensure that the parser correctly

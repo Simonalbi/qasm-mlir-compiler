@@ -1,5 +1,9 @@
 // RUN: ./build/qparse %s --emit-mlir | ./llvm-project/build/bin/FileCheck %s
 
+// This file tests the basic lowering of single-qubit unary gates.
+// It verifies that simple operations like Hadamard (h) and Pauli-X (x)
+// are correctly translated into their corresponding MLIR operations.
+
 OPENQASM 2.0;
 include "qelib1.inc";
 

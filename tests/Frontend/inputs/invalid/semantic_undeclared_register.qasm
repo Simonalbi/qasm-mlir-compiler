@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file validates the semantic type-checking of the compiler.
 // It ensures that attempting to apply a quantum gate to a register

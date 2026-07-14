@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file tests the syntactical robustness of the parser.
 // It checks that the parser correctly identifies and reports errors

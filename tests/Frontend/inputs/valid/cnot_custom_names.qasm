@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file tests the parser's flexibility with custom identifiers.
 // It ensures that multi-qubit gates like CNOT function correctly

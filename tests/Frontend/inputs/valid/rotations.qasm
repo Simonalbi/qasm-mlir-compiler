@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file specifically tests the parsing of parameterized gates.
 // It verifies that the frontend correctly evaluates parameters containing

@@ -1,5 +1,9 @@
 // RUN: ./build/qparse %s --emit-mlir | ./llvm-project/build/bin/FileCheck %s
 
+// This file tests the interaction between multiple distinct quantum registers.
+// It verifies that qubit extraction and cross-register gate operations
+// (like a CNOT between qubits from different registers) maintain correct SSA tracking.
+
 OPENQASM 2.0;
 include "qelib1.inc";
 

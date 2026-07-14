@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file tests semantic type enforcement during measurements.
 // In OpenQASM, the target of a measurement must be a classical

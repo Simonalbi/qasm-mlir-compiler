@@ -1,5 +1,9 @@
 // RUN: ./build/qparse %s --emit-mlir | ./llvm-project/build/bin/FileCheck %s
 
+// This file verifies the correct propagation of SSA values across consecutive
+// CNOT (cx) gates. It ensures that both the control and target qubits are
+// consumed and their updated states are correctly passed to the next gate.
+
 OPENQASM 2.0;
 include "qelib1.inc";
 

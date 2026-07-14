@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file verifies the lexer's ability to handle malformed strings.
 // Specifically, it ensures that an unterminated string literal 

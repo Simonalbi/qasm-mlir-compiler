@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file models the core operations of a quantum teleportation protocol.
 // It is used to verify that the AST correctly captures a sequential cascade

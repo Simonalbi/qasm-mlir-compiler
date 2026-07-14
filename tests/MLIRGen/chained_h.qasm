@@ -1,5 +1,10 @@
 // RUN: ./build/qparse %s --emit-mlir | ./llvm-project/build/bin/FileCheck %s
 
+// This file tests the strict SSA chain for single-qubit gates.
+// It verifies that a sequence of consecutive Hadamard (h) gates correctly
+// captures the output of the previous gate and reuses it, adhering to the
+// No-Cloning theorem.
+
 OPENQASM 2.0;
 include "qelib1.inc";
 

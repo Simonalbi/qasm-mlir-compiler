@@ -238,16 +238,16 @@ Combine `quantum-opt` with LLVM's `FileCheck` to verify that the dialect parses 
 ```
 
 ### ⚙️ Optimization (Planned usage)
-Use the `qcc` tool to optimize a `qasm` file.
+Use the `qparse` tool to optimize a `qasm` file.
 ```bash
-qcc input.qasm --optimize -emit=qasm -o output.qasm
+qparse input.qasm --optimize --emit-qasm -o output.qasm
 ```
 
 ## 📋 Project Roadmap
 The development of this compiler is divided into the following milestones:
 - [x] **Task 1:** Parser and AST generation from OpenQASM subset.
 - [x] **Task 2:** Custom `quantum` dialect definition in MLIR (ODS/TableGen).
-- [ ] **Task 3:** MLIRGen (AST visitor to SSA-style Intermediate Representation).
+- [x] **Task 3:** MLIRGen (AST visitor to SSA-style Intermediate Representation).
 - [ ] **Task 4:** Optimization Pass - Auto-inverse gate cancellation (e.g., H-H).
 - [ ] **Task 5:** Backend - Re-emission of optimized OpenQASM code.
 - [ ] **Task 6:** End-to-end equivalence verification via Qiskit Aer simulation.

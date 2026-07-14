@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file verifies that array boundary checks are correctly enforced.
 // It tests whether the semantic analyzer catches out-of-bounds array

@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file tests the lexical analysis phase of the parser.
 // It verifies that an error is correctly emitted when an identifier

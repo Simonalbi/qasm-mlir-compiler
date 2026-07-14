@@ -1,4 +1,4 @@
-// RUN: qparse %s.qasm
+// RUN: qparse %s
 
 // This file is a comprehensive integration test for the OpenQASM subset.
 // It exercises every supported language construct in a single file,
