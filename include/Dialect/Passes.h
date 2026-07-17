@@ -6,12 +6,16 @@
 
 namespace mlir {
     namespace quantum {
-
-        // Creates a pass that verifies the No-Cloning theorem (each qubit must be used exactly once)
         std::unique_ptr<Pass> createNoCloningVerifierPass();
+        std::unique_ptr<Pass> createCancelInversePass();
+        
+        void registerNoCloningVerifierPass();
+        void registerCancelInversePass();
 
-        // Registers all quantum dialect passes
-        void registerQuantumPasses();
+        inline void registerQuantumPasses() {
+            registerNoCloningVerifierPass();
+            registerCancelInversePass();
+        }
     }
 }
 

@@ -6,6 +6,8 @@
 #include "mlir/IR/MLIRContext.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Pass/PassManager.h"
+#include "Dialect/Passes.h"
 
 #include <iostream>
 #include <fstream>
@@ -37,7 +39,7 @@ void printToken(int tok, const Lexer& lexer) {
 int main(int argc, char* argv[]) {
     // Args check
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_file.qasm> [--dump-ast] [--emit-mlir]\n";
+        std::cerr << "Usage: " << argv[0] << " <path_to_file.qasm> [--dump-ast] [--emit-mlir] [--optimize]\n";
         return 1;
     }
 
@@ -45,6 +47,7 @@ int main(int argc, char* argv[]) {
     std::string filename = "";
     bool dumpAST = false;
     bool emitMLIR = false;
+    bool optimize = false;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -52,6 +55,8 @@ int main(int argc, char* argv[]) {
             dumpAST = true;
         } else if (arg == "--emit-mlir") {
             emitMLIR = true;
+        } else if (arg == "--optimize") {
+            optimize = true;
         } else if (arg[0] != '-') {
             filename = arg;
         } else {
@@ -92,6 +97,24 @@ int main(int argc, char* argv[]) {
         auto module = quantum::mlirGen(context, *ast);
         if (!module) {
             std::cerr << "MLIR generation failed.\n";
+            return 1;
+        }
+        
+        mlir::PassManager pm(&context);
+        
+        // Create a nested pass manager for func.func operations
+        auto &funcPM = pm.nest<mlir::func::FuncOp>();
+        
+        // Always verify No-Cloning theorem
+        funcPM.addPass(mlir::quantum::createNoCloningVerifierPass());
+        
+        // Run optimization if requested
+        if (optimize) {
+            funcPM.addPass(mlir::quantum::createCancelInversePass());
+        }
+
+        if (mlir::failed(pm.run(module.get()))) {
+            std::cerr << "Compilation pipeline failed (verification or optimization).\n";
             return 1;
         }
         

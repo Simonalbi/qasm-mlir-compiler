@@ -50,6 +50,7 @@ target_link_libraries(Frontend PUBLIC
 add_library(QuantumDialect 
     lib/Dialect/QuantumDialect.cpp
     lib/Dialect/NoCloningVerifierPass.cpp
+    lib/Dialect/CancelInversePass.cpp
 )
 add_dependencies(QuantumDialect QuantumIncGen)
 target_include_directories(QuantumDialect PUBLIC include)
@@ -57,11 +58,16 @@ target_link_libraries(QuantumDialect PUBLIC
     MLIRIR
     MLIRSupport
     MLIRSideEffectInterfaces
+    MLIRTransforms
 )
 
 # Executables
 add_executable(qparse tools/qparse/qparse.cpp)
-target_link_libraries(qparse PRIVATE Frontend)
+target_link_libraries(qparse PRIVATE 
+    Frontend
+    QuantumDialect
+    MLIRPass
+)
 
 add_executable(quantum-opt tools/quantum-opt/quantum-opt.cpp)
 target_link_libraries(quantum-opt PRIVATE 

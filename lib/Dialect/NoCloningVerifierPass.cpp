@@ -48,7 +48,7 @@ namespace mlir {
       return std::make_unique<NoCloningVerifierPass>();
     }
 
-    void registerQuantumPasses() {
+    void registerNoCloningVerifierPass() {
       PassRegistration<NoCloningVerifierPass>();
     }
   }
