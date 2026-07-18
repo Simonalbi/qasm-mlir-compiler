@@ -231,23 +231,20 @@ Run the tool with the custom `--quantum-verify-no-cloning` pass to ensure that a
 ./build/quantum-opt input.mlir --quantum-verify-no-cloning
 ```
 
+**Auto-Inverse Gate Cancellation (Optimization):**
+Removes redundant consecutive auto-inverse gates (e.g., `H-H`, `X-X`, `CX-CX`) that act on the same qubits, simplifying the circuit without altering its quantum state.
+```bash
+./build/quantum-opt input.mlir --quantum-cancel-inverse
+```
+
 **Round-Trip Parsing & Printing:** 
 Combine `quantum-opt` with LLVM's `FileCheck` to verify that the dialect parses and prints perfectly without loss of information:
 ```bash
 .quantum-opt input.mlir | ./llvm-project/build/bin/FileCheck input.mlir
 ```
 
-### ⚙️ Optimization
-Use the `quantum-opt` tool to apply optimization passes to the MLIR code.
-
-**Auto-Inverse Gate Cancellation:**
-Removes redundant consecutive auto-inverse gates (e.g., `H-H`, `X-X`, `CX-CX`) that act on the same qubits, simplifying the circuit without altering its quantum state.
-```bash
-./build/quantum-opt input.mlir --quantum-cancel-inverse
-```
-
-*Frontend Pipeline (Planned usage):*
-The `qparse` tool will expose these optimizations directly for OpenQASM files.
+### ⚙️ Optimization (Planned usage)
+Use the `qparse` tool to optimize a `qasm` file.
 ```bash
 qparse input.qasm --optimize --emit-qasm -o output.qasm
 ```
